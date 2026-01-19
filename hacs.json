@@ -1,4 +1,5 @@
 {
     "name": "Vietnamese Lunar Calendar",
+    "country": ["VN"],
     "render_readme": true
 }
