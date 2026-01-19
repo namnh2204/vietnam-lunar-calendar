@@ -1,0 +1,14 @@
+{
+  "domain": "vietnamese_lunar_calendar",
+  "name": "Vietnamese Lunar Calendar",
+  "codeowners": [
+    "@namnh2204"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/namnh2204/vietnamese-lunar-calendar",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/namnh2204/vietnamese-lunar-calendar/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}

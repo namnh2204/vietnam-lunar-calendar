@@ -1,129 +1,194 @@
-# Python_Solar_and_Lunar
-Calculate Vietnam lunar calendar (some different with Chinese lunar calendar)
+# 🌙 Vietnamese Lunar Calendar for Home Assistant
 
-Base on Algorithm: \Algorithm\How to compute the Vietnamese lunar calendar.pdf
+A custom Home Assistant integration that provides Vietnamese lunar calendar (Âm lịch) sensors. Perfect for tracking lunar dates, special days like Mùng 1 (1st) and Rằm (15th), and Vietnamese zodiac information.
 
-----------------------------------
-HOW TO USE:
+## Features
 
-# I. RUN example in terminal (or console)
+- 📅 **Lunar Date Sensor** - Current lunar date with zodiac information
+- 🔢 **Lunar Day/Month/Year Sensors** - Individual date components
+- 🌕 **Special Day Detection** - Automatically detects Mùng 1 and Rằm
+- 📆 **Next Special Days** - Countdown to next Mùng 1 and Rằm
+- 🐉 **Zodiac Information** - Can Chi for year, month, and day
 
-&gt; python LunarSolar.py
+## Installation
 
-0. Convert solar to lunar. 
-1. Convert lunar to solar 
+### Via HACS (Recommended)
 
-Select (0/1): 0
+1. Ensure **[HACS](https://hacs.xyz/)** is installed in Home Assistant.
+2. Go to **HACS** > **Integrations**.
+3. Click the **three dots** in the top right corner and select **Custom repositories**.
+4. Paste the repository URL:
+   ```text
+   https://github.com/namnh2204/vietnamese-lunar-calendar
+   ```
+5. Select **Integration** as the category.
+6. Click **Add**.
+7. Close the modal, find "**Vietnamese Lunar Calendar**" in the list, and click **Download**.
+8. **Restart** Home Assistant.
 
-Enter date in dd/mm/yyyy format: 04/11/2017
+### Manual Installation
 
-Thứ 7 - 16/9/2017 AL; ngày: Ất Mùi - tháng: Bính Tuất - năm: Đinh Dậu
+1. Copy the `vietnamese_lunar_calendar` folder to your Home Assistant `custom_components` directory:
+   ```
+   custom_components/
+   └── vietnamese_lunar_calendar/
+       ├── __init__.py
+       ├── config_flow.py
+       ├── lunar_solar.py
+       ├── manifest.json
+       ├── sensor.py
+       └── strings.json
+   ```
 
-&gt; python LunarSolar.py
+2. Restart Home Assistant
 
-0. Convert solar to lunar. 
-1. Convert lunar to solar 
+### Configuration
 
-Select (0/1): 1
+1. Go to **Settings** → **Devices & Services** → **+ Add Integration**
+2. Search for "**Vietnamese Lunar Calendar**" and add it
 
-Enter date in dd/mm/yyyy format: 16/9/2017
+## Sensors
 
-Is leap month ? (0/1) - default 0: 0
+After installation, the following sensors will be available:
 
-Date 16/9/2017 in lunar calendar is Sat 4/11/2017 in solar calendar
+| Sensor | Entity ID | Description | Example Value |
+|--------|-----------|-------------|---------------|
+| Ngày Âm Lịch | `sensor.ngay_am_lich` | Full lunar date with zodiac | `1/12 năm Ất Tị` |
+| Ngày Âm | `sensor.ngay_am` | Lunar day (1-30) | `1` |
+| Tháng Âm | `sensor.thang_am` | Lunar month (1-12) | `12` |
+| Năm Âm | `sensor.nam_am` | Lunar year | `2025` |
+| Mùng 1 hoặc Rằm | `sensor.mung_1_hoac_ram` | Special day indicator | `Mùng 1` / `Rằm` / `Không` |
+| Mùng 1 kế tiếp | `sensor.mung_1_ke_tiep` | Next 1st lunar day (solar date) | `2026-02-17` |
+| Rằm kế tiếp | `sensor.ram_ke_tiep` | Next 15th lunar day (solar date) | `2026-02-02` |
 
-# II. Function in file
+### Sensor Attributes
 
-## lunar_to_solar(lunar_day, lunar_month, lunar_year, lunar_leap_month, time_zone=7)
+The `sensor.ngay_am_lich` sensor includes these attributes:
 
-Convert a lunar date to the corresponding solar date.
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `lunar_day` | Lunar day number | `1` |
+| `lunar_month` | Lunar month number | `12` |
+| `lunar_year` | Lunar year | `2025` |
+| `is_leap_month` | Is current month a leap month | `false` |
+| `zodiac_year` | Year in Can Chi | `Ất Tị` |
+| `zodiac_day` | Day in Can Chi | `Quý Tị` |
+| `zodiac_month` | Month in Can Chi | `Kỷ Sửu` |
+| `day_of_week` | Vietnamese day of week | `Thứ 2` |
+| `solar_date` | Corresponding solar date | `19/01/2026` |
 
-params: 
+## Example Automations
 
-            dd, mm, yy in lunar calendar
-            : leap_month: 1 if leap month; 0 if not leap month
-            : time_zone: default = 7 - Hanoi timezone
+### Notify on Mùng 1 and Rằm at 6 AM
 
-rtype  : list with 3 elements
-            
-            0: dd : In solar calendar
-            1: mm : In solar calendar
-            2: yy : In solar calendar
+```yaml
+automation:
+  - id: lunar_calendar_notification
+    alias: "Thông báo Mùng 1 và Rằm"
+    description: "Thông báo nhắc nhở vào ngày Mùng 1 và Rằm lúc 6 giờ sáng"
+    trigger:
+      - platform: time
+        at: "06:00:00"
+    condition:
+      - condition: template
+        value_template: >
+          {{ states('sensor.mung_1_hoac_ram') in ['Mùng 1', 'Rằm'] }}
+    action:
+      - service: notify.notify
+        data:
+          title: "🌙 Nhắc nhở Âm Lịch"
+          message: >
+            {% if states('sensor.mung_1_hoac_ram') == 'Mùng 1' %}
+            Hôm nay là ngày Mùng 1 âm lịch ({{ states('sensor.ngay_am_lich') }}).
+            Nhớ thắp hương cúng ông bà tổ tiên! 🙏
+            {% else %}
+            Hôm nay là ngày Rằm ({{ states('sensor.ngay_am_lich') }}).
+            Nhớ thắp hương cúng ông bà tổ tiên! 🙏
+            {% endif %}
+```
 
+### Notify Before Tết (Lunar New Year)
 
-## solar_to_lunar(solar_dd, solar_mm, solar_yy, time_zone=7):
-   
-Convert solar date dd/mm/yyyy to the corresponding lunar date
+```yaml
+automation:
+  - id: tet_countdown
+    alias: "Đếm ngược Tết"
+    trigger:
+      - platform: template
+        value_template: >
+          {{ state_attr('sensor.mung_1_ke_tiep', 'lunar_month') == 1 
+             and state_attr('sensor.mung_1_ke_tiep', 'days_until') == 7 }}
+    action:
+      - service: notify.notify
+        data:
+          title: "🎆 Sắp Tết rồi!"
+          message: "Còn 7 ngày nữa là Tết Nguyên Đán!"
+```
 
-params: 
+## Dashboard Card Example
 
-       day, month, year in solar calendar ;
-       time_zone with default = 7 (Ha Noi time zone)
+### Simple Card (Entities)
 
-rtype: list with 4 elements
-            
-            0: dd : In lunar calendar
-            1: mm : In lunar calendar
-            2: yy : In lunar calendar
-            3: Is leap month: 1 --> leap month
+```yaml
+type: entities
+title: 🌙 Âm Lịch
+entities:
+  - entity: sensor.ngay_am_lich
+    name: Ngày Âm Lịch
+  - entity: sensor.mung_1_hoac_ram
+    name: Ngày Đặc Biệt
+  - entity: sensor.ram_ke_tiep
+    name: Rằm kế tiếp
+  - entity: sensor.mung_1_ke_tiep
+    name: Mùng 1 kế tiếp
+```
 
+### Custom Button Card
 
+```yaml
+type: custom:button-card
+entity: sensor.ngay_am_lich
+name: "🌙 Âm Lịch"
+show_state: true
+show_icon: true
+icon: mdi:moon-waning-crescent
+styles:
+  card:
+    - border-radius: 12px
+    - padding: 16px
+  icon:
+    - color: purple
+  state:
+    - font-size: 14px
+```
 
-## zodiac_month(month, year):
-  
-Month in CAN-CHI name
+## Technical Details
 
-Params
-      
-      : month of lunar calendar
-      
-      : year
+This integration uses astronomical algorithms from the book "Astronomical Algorithms" by Jean Meeus (1998), adapted from the [SolarLunarCalendar](https://github.com/quangvinh86/SolarLunarCalendar) Python library.
 
-rtype: str
+The lunar calendar calculations are specifically tuned for the Vietnamese timezone (UTC+7) and follow the Vietnamese lunar calendar system.
 
+### Timezone
 
-## zodiac_day(solar_dd, solar_mm, solar_yy):
-  
-Find day in CAN-CHI name
+The integration uses Vietnam timezone (UTC+7) by default for all calculations.
 
-Params: day
-      
-      : month
-      
-      : year
+## Troubleshooting
 
-rtype: str
+### Sensors not appearing
 
+1. Make sure you've restarted Home Assistant after copying the files
+2. Check that the integration was added via Settings → Devices & Services
+3. Check Home Assistant logs for any error messages
 
-## zodiac_year(year):
-  
-  '''Find year in CAN-CHI (zodiac) name'''
+### Wrong lunar date
 
-## lunar_leap(yy):
+The lunar calendar uses the Vietnamese timezone (UTC+7). If your Home Assistant timezone is different, there might be a 1-day discrepancy near midnight.
 
-      find leap year
+## Credits
 
-      params: yy - year
+- Lunar calendar algorithms: [quangvinh86/SolarLunarCalendar](https://github.com/quangvinh86/SolarLunarCalendar)
+- Based on "Astronomical Algorithms" by Jean Meeus, 1998
 
-       rtype: 1 - leap year
+## License
 
-              0 - not leap year
-
-
-## day_in_week(solar_dd, solar_mm, solar_yy, viet_language=1):
-  
-Get day in week by algrorithm: get julian day, get mod of julian day and 7
-
-Params: 3 elements and 1 default element
-            
-            0: dd : In solar calendar
-            
-            1: mm : In solar calendar
-            
-            2: yy : In solar calendar
-            
-            3: viet_language: default = 1 return Vietnamese language
-                            : other value return English language
-rtype: Str
-
-
+This integration is provided as-is for personal use with Home Assistant.

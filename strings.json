@@ -1,0 +1,13 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Vietnamese Lunar Calendar",
+                "description": "Add Vietnamese Lunar Calendar sensors to Home Assistant. This will create sensors for lunar date, day, month, year, and special day detection (1st and 15th)."
+            }
+        },
+        "abort": {
+            "already_configured": "Vietnamese Lunar Calendar is already configured."
+        }
+    }
+}
