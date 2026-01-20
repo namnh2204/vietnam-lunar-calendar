@@ -1,7 +1,7 @@
 """Sensor platform for Vietnamese Lunar Calendar."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 from homeassistant.components.sensor import (
@@ -25,6 +25,7 @@ from .lunar_solar import (
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "vietnamese_lunar_calendar"
+VN_TIMEZONE = timezone(timedelta(hours=7))
 
 
 async def async_setup_entry(
@@ -82,7 +83,7 @@ class LunarDateSensor(LunarBaseSensor):
 
     async def async_update(self) -> None:
         """Update the sensor."""
-        now = datetime.now()
+        now = datetime.now(VN_TIMEZONE)
         lunar = solar_to_lunar(now.day, now.month, now.year)
         lunar_day, lunar_month, lunar_year, is_leap = lunar
         
@@ -113,7 +114,7 @@ class LunarDaySensor(LunarBaseSensor):
 
     async def async_update(self) -> None:
         """Update the sensor."""
-        now = datetime.now()
+        now = datetime.now(VN_TIMEZONE)
         lunar = solar_to_lunar(now.day, now.month, now.year)
         self._attr_native_value = lunar[0]
 
@@ -128,7 +129,7 @@ class LunarMonthSensor(LunarBaseSensor):
 
     async def async_update(self) -> None:
         """Update the sensor."""
-        now = datetime.now()
+        now = datetime.now(VN_TIMEZONE)
         lunar = solar_to_lunar(now.day, now.month, now.year)
         self._attr_native_value = lunar[1]
         self._attr_extra_state_attributes = {
@@ -146,7 +147,7 @@ class LunarYearSensor(LunarBaseSensor):
 
     async def async_update(self) -> None:
         """Update the sensor."""
-        now = datetime.now()
+        now = datetime.now(VN_TIMEZONE)
         lunar = solar_to_lunar(now.day, now.month, now.year)
         self._attr_native_value = lunar[2]
         self._attr_extra_state_attributes = {
@@ -164,7 +165,7 @@ class LunarFirstOrFifteenthSensor(LunarBaseSensor):
 
     async def async_update(self) -> None:
         """Update the sensor."""
-        now = datetime.now()
+        now = datetime.now(VN_TIMEZONE)
         lunar = solar_to_lunar(now.day, now.month, now.year)
         lunar_day = lunar[0]
         
@@ -193,7 +194,7 @@ class NextLunarFirstSensor(LunarBaseSensor):
 
     async def async_update(self) -> None:
         """Update the sensor."""
-        now = datetime.now()
+        now = datetime.now(VN_TIMEZONE)
         lunar = solar_to_lunar(now.day, now.month, now.year)
         lunar_day, lunar_month, lunar_year, is_leap = lunar
         
@@ -230,7 +231,7 @@ class NextLunarFifteenthSensor(LunarBaseSensor):
 
     async def async_update(self) -> None:
         """Update the sensor."""
-        now = datetime.now()
+        now = datetime.now(VN_TIMEZONE)
         lunar = solar_to_lunar(now.day, now.month, now.year)
         lunar_day, lunar_month, lunar_year, is_leap = lunar
         
